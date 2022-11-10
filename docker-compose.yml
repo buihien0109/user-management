@@ -1,0 +1,75 @@
+version: "latest"
+
+services:
+    # MySQL
+    mysql:
+        image: mysql:latest
+        volumes:
+            - ./db-user.sql:/docker-entrypoint-initdb.d/init.sql
+            - db-user:/var/lib/mysql
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: 123
+        networks:
+            - backend-network
+
+    # PhpMyAdmin
+    phpmyadmin:
+        depends_on:
+            - mysql
+        image: phpmyadmin/phpmyadmin:latest
+        restart: always
+        ports:
+            - "89:80"
+        environment:
+            PMA_HOST: mysql
+            MYSQL_ROOT_PASSWORD: 123
+        networks:
+            - backend-network
+
+    # Mail
+    maildev:
+        image: maildev/maildev
+        restart: always
+        ports:
+            - "1080:1080"
+        networks:
+            - backend-network
+
+    # App Backend
+    userbackend:
+        image: buihien0109/user-backend:latest
+        build:
+            context: user-backend
+            dockerfile: Dockerfile
+        depends_on:
+            - mysql
+        restart: always
+        # ports:
+        #   - "8899:8080"
+        networks:
+            - backend-network
+            - frontend-network
+
+        # App Frontend
+    userfrontend:
+        image: buihien0109/user-frontend:latest
+        build:
+            context: user-frontend
+            dockerfile: Dockerfile
+        depends_on:
+            - userbackend
+        ports:
+            - "3002:80"
+        restart: always
+        networks:
+            - frontend-network
+
+volumes:
+    db-user:
+
+networks:
+    backend-network:
+        external: true
+    frontend-network:
+        external: true

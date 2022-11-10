@@ -14,9 +14,3 @@ all:
 	mvn clean package -DskipTests;
 	docker build -t buihien0109/user-backend:latest .;
 	docker push buihien0109/user-backend:latest
-
-down:
-	docker compose down
-
-up:
-	docker compose up -d
